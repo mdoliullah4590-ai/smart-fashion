@@ -153,23 +153,29 @@
 
         let cart = [];
 
-        function render() {
-            document.getElementById('men-grid').innerHTML = products.map(p => `
-                <div class="product-hover cursor-pointer group" onclick="addToCart(${p.id})">
-                    <div class="aspect-[4/5] overflow-hidden rounded-[30px] mb-6 bg-slate-200 shadow-lg">
-                        <img src="${p.img}" class="w-full h-full object-cover transition-transform duration-700">
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-lg uppercase tracking-tight">${p.name}</h3>
-                            <p class="text-xs opacity-50 uppercase tracking-widest font-semibold mt-1">Limited Edition</p>
-                        </div>
-                        <span class="text-premium_teal font-extrabold">${p.price} BDT</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
+  function render() {
+    document.getElementById('men-grid').innerHTML = products.map(p => `
+        <div class="product-hover cursor-pointer group bg-white dark:bg-zinc-900 p-4 rounded-[30px] shadow-sm">
+            <div class="aspect-[4/5] overflow-hidden rounded-[20px] mb-4 bg-slate-200">
+                <img src="${p.img}" class="w-full h-full object-cover transition-transform duration-700">
+            </div>
+            <div class="mb-4">
+                <h3 class="font-bold text-sm uppercase tracking-tight truncate">${p.name}</h3>
+                <span class="text-premium_teal font-extrabold text-sm">${p.price} BDT</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="addToCart(${p.id})" class="bg-slate-100 dark:bg-zinc-800 text-[10px] font-bold uppercase py-3 rounded-xl hover:bg-premium_teal hover:text-white transition-all">
+                    + Cart
+                </button>
+                <button onclick="buyNow(${p.id})" class="bg-premium_orange text-white text-[10px] font-bold uppercase py-3 rounded-xl shadow-lg hover:bg-black transition-all">
+                    Buy Now
+                </button>
+            </div>
+        </div>
+    `).join('');
+  }
+        
         function addToCart(id) {
             cart.push(products.find(p => p.id === id));
             document.getElementById('cart-count').innerText = cart.length;
@@ -178,21 +184,63 @@
         }
 
         function updateCart() {
-            const container = document.getElementById('cart-container');
-            if(cart.length === 0) { container.innerHTML = "<p class='opacity-40 uppercase tracking-widest text-center py-20'>Your collection is currently empty.</p>"; return; }
-            let total = cart.reduce((s, i) => s + i.price, 0);
-            container.innerHTML = `
-                <div class="space-y-8">
-                    ${cart.map((item, i) => `<div class="flex justify-between items-center"><span class="font-bold uppercase tracking-widest text-sm">${item.name}</span><b class="text-premium_teal">${item.price} BDT</b></div>`).join('')}
-                    <div class="border-t border-slate-200 dark:border-zinc-700 pt-8 mt-8 flex justify-between items-center">
-                        <span class="text-2xl font-bold uppercase italic tracking-tighter">Subtotal</span>
-                        <span class="text-3xl font-extrabold text-premium_orange">${total} BDT</span>
+    const container = document.getElementById('cart-container');
+    if(cart.length === 0) { 
+        container.innerHTML = "<p class='opacity-40 uppercase tracking-widest text-center py-20'>Your bag is empty.</p>"; 
+        return; 
+    }
+    
+    let total = cart.reduce((s, i) => s + i.price, 0);
+    
+    container.innerHTML = `
+        <div class="space-y-6">
+            ${cart.map((item, index) => `
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-zinc-800 pb-4">
+                    <div class="flex items-center gap-4">
+                        <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover">
+                        <div>
+                            <p class="font-bold uppercase text-[10px] tracking-widest">${item.name}</p>
+                            <p class="text-premium_teal font-bold">${item.price} BDT</p>
+                        </div>
                     </div>
-                    <button class="w-full bg-black dark:bg-white text-white dark:text-black py-6 rounded-full font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-premium_teal dark:hover:bg-premium_teal transition-all">Proceed to Checkout</button>
+                    <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700 p-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
                 </div>
-            `;
-        }
+            `).join('')}
+            
+            <div class="pt-6">
+                <div class="flex justify-between items-center mb-8">
+                    <span class="text-xl font-bold uppercase tracking-tighter">Total Amount</span>
+                    <span class="text-2xl font-extrabold text-premium_orange">${total} BDT</span>
+                </div>
+                <button class="w-full bg-black dark:bg-white text-white dark:text-black py-5 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:bg-premium_teal transition-all">
+                    Confirm Order via WhatsApp
+                </button>
+            </div>
+        </div>
+    `;
+}
+
         render();
+        // Function to Buy Immediately
+function buyNow(id) {
+    const item = products.find(p => p.id === id);
+    cart.push(item);
+    document.getElementById('cart-count').innerText = cart.length;
+    updateCart();
+    showSection('cart'); // Jump straight to checkout
+}
+
+// Function to Remove Items from Cart
+function removeFromCart(index) {
+    cart.splice(index, 1); // Removes 1 item at the specific position
+    document.getElementById('cart-count').innerText = cart.length;
+    updateCart(); // Refresh the cart display
+}
+        
     </script>
 
     <div style="position: fixed; bottom: 30px; right: 30px; z-index: 100;">
